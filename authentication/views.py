@@ -45,7 +45,7 @@ class PasswordValidation(View):
         password = data['password']
 
         schema = PasswordValidator()
-        schema.min(8).max(100).has().uppercase().has().lowercase().has().digits()
+        schema.min(8).max(100).has().digits()
 
         if not schema.validate(password):
             return JsonResponse({'password_error': 'not a valid password(At least 8 charecter, \
