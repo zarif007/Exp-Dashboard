@@ -1,10 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 import json
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from validate_email import validate_email
 from password_validator import PasswordValidator
+from django.contrib import messages
 
 
 class UsernameValidation(View):
@@ -58,3 +59,19 @@ class PasswordValidation(View):
 class RegistrationView(View):
     def get(self, request):
         return render(request, 'authentication/register.html')
+
+    def post(self, request):
+        username = request.POST['username']
+        email = request.POST['email']
+        password = request.POST['password']
+        confirmpassword = request.POST['confirm_password']
+        context = {
+            'fieldvalues' : request.POST
+        }
+
+        user = User.objects.create_user(username=username, email=email)
+        user.set_password(password)
+        user.save()
+        messages.success(request, 'Acoount created Successfully!!')
+
+        return render(request, 'authentication/register.html', context)
