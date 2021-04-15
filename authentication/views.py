@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from validate_email import validate_email
 from password_validator import PasswordValidator
 from django.contrib import messages
+from django.core.mail import EmailMessage
 
 
 class UsernameValidation(View):
@@ -71,7 +72,17 @@ class RegistrationView(View):
 
         user = User.objects.create_user(username=username, email=email)
         user.set_password(password)
+        user.is_active = False
         user.save()
+        email = EmailMessage(
+            'Hello',
+            'Body goes here',
+            'from@example.com',
+            ['to1@example.com', 'to2@example.com'],
+            ['bcc@example.com'],
+            reply_to=['another@example.com'],
+            headers={'Message-ID': 'foo'},
+        )
         messages.success(request, 'Acoount created Successfully!!')
 
         return render(request, 'authentication/register.html', context)
