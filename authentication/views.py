@@ -1,12 +1,19 @@
-from django.shortcuts import render, redirect
-from django.views import View
 import json
-from django.http import JsonResponse
-from django.contrib.auth.models import User
-from validate_email import validate_email
-from password_validator import PasswordValidator
+
 from django.contrib import messages
+from django.contrib.auth.models import User
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.encoding import (DjangoUnicodeDecodeError, force_bytes,
+                                   force_text)
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.views import View
+from password_validator import PasswordValidator
+from validate_email import validate_email
+from .utils import token_generator
 
 
 class UsernameValidation(View):
@@ -74,15 +81,33 @@ class RegistrationView(View):
         user.set_password(password)
         user.is_active = False
         user.save()
+
+        uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+
+        domain = get_current_site(request).domain
+        link = reverse('activate', kwargs={'uidb64': uidb64, 'token': token_generator.make_token(user)})
+
+        email_subject = 'Activate your account'
+
+        activating_url = f'http://{domain + link}'
+
+        email_body = f'Hi {username} \n Click this link to activate your account \n {activating_url}'
+
         email = EmailMessage(
-            'Hello',
-            'Body goes here',
-            'from@example.com',
-            ['to1@example.com', 'to2@example.com'],
-            ['bcc@example.com'],
-            reply_to=['another@example.com'],
-            headers={'Message-ID': 'foo'},
+            email_subject,
+            email_body,
+            'zarifhuq007@gmail.com',
+            [email],
         )
+
+        email.send(fail_silently=False)
+
         messages.success(request, 'Acoount created Successfully!!')
 
         return render(request, 'authentication/register.html', context)
+
+
+class VerificationView(View):
+
+    def get(self, request, uidb4, token):
+        return redirect('login')
