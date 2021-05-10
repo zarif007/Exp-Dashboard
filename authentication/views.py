@@ -1,6 +1,6 @@
 import json
 
-from django.contrib import messages
+from django.contrib import auth, messages
 from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
@@ -13,6 +13,7 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views import View
 from password_validator import PasswordValidator
 from validate_email import validate_email
+
 from .utils import token_generator
 
 
@@ -138,3 +139,33 @@ class LoginView(View):
 
     def get(self, request):
         return render(request, 'authentication/login.html')
+
+    def post(self, request):
+        username = request.POST['username']
+        password = request.POST['password']
+
+        if username and password:
+            user = auth.authenticate(username=username, password=password)
+
+            if user:
+                if user.is_active:
+                    auth.login(request, user)
+                    messages.success(request, f'Welcome , {user.username} \
+                                    your are logged in')
+                    return render(request, 'expenses/index.html')
+            
+                messages.error(request, 'Account is not avtivated yet')
+                return render(request, 'authentication/login.html')
+
+            messages.error(request, 'Invalid credentials')
+            return render(request, 'authentication/login.html')
+            
+        messages.error(request, 'Invalid credentials')
+        return render(request, 'authentication/login.html')
+        
+
+class LogoutView(View):
+    def post(self, request):
+        auth.logout(request)
+        messages.success(request, 'You have been logged Out')
+        return redirect('login')
