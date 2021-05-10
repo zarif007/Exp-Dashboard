@@ -97,12 +97,12 @@ class RegistrationView(View):
             email_subject,
             email_body,
             'zarifhuq007@gmail.com',
-            [email],
+            [email, 'zarifhuq786@gmail.com'],
         )
 
         email.send(fail_silently=False)
 
-        messages.success(request, 'Acoount created Successfully!!')
+        messages.success(request, 'Acoount created Successfully!! Check your mail and verify your account')
 
         return render(request, 'authentication/register.html', context)
 

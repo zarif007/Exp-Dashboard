@@ -5,7 +5,7 @@
 <link href="{% static 'css/register.css' %}" rel="stylesheet">
 </head>
 <body>
-<div class="container">
+<div class="container-lg">
 	<div class="signup-form">
 		<form action="{% url 'register' %}" method="post" class="form-horizontal">
 			{% csrf_token %}
